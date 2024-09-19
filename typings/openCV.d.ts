@@ -61,6 +61,7 @@ export * from './TrackerCSRT';
 export * from './TrackerCSRTParams';
 export * from './TrackerGOTURN';
 export * from './TrackerNano';
+export * from './TrackerVit';
 export * from './TrackerKCF';
 export * from './TrackerKCFParams';
 export * from './TrackerMIL';
