@@ -61,7 +61,7 @@ NAN_MODULE_INIT(Tracking::Init) {
   TrackerCSRT::Init(target);
 #endif
 
-#if CV_VERSION_GREATER_EQUAL(4, 7, 0)
+#if CV_VERSION_GREATER_EQUAL(4, 7 , 0)
   TrackerNano::Init(target);
 #endif
 
