@@ -16,7 +16,7 @@ public:
     std::vector<cv::Mat> blobs;
     v8::Local<v8::Array> jsArray = v8::Local<v8::Array>::Cast(jsBlobs);
     for (uint32_t i = 0; i < jsArray->Length(); ++i) {
-      blobs.push_back(Mat::Converter::unwrap(Nan::Get(jsArray, i).ToLocalChecked()));
+      blobs.push_back(Mat::Converter::unwrapUnchecked(Nan::Get(jsArray, i).ToLocalChecked()));
     }
     return blobs;
   }
