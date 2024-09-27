@@ -8,7 +8,7 @@ class LayerConverter {
 public:
   static v8::Local<v8::Object> wrap(cv::Ptr<cv::dnn::Layer> layer) {
     v8::Local<v8::Object> obj = Nan::New<v8::Object>();
-    
+
     // Add blobs field
     Nan::Set(obj, Nan::New("blobs").ToLocalChecked(), wrapBlobs(layer->blobs));
 
@@ -30,6 +30,11 @@ public:
       Nan::Set(jsArray, i, Mat::Converter::wrap(blobs[i]));
     }
     return jsArray;
+  }
+
+  // Add the setBlobs method
+  static void setBlobs(cv::Ptr<cv::dnn::Layer> layer, v8::Local<v8::Value> jsBlobs) {
+    layer->blobs = unwrapBlobs(jsBlobs); // Use unwrapBlobs to convert JS blobs to OpenCV blobs
   }
 };
 
