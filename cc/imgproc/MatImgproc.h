@@ -19,6 +19,7 @@ public:
   static NAN_METHOD(ResizeAsync);
   static NAN_METHOD(ResizeToMax);
   static NAN_METHOD(ResizeToMaxAsync);
+  static NAN_METHOD(Reshape);
   static NAN_METHOD(Threshold);
   static NAN_METHOD(ThresholdAsync);
   static NAN_METHOD(AdaptiveThreshold);

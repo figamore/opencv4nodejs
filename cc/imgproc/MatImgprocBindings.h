@@ -151,6 +151,36 @@ public:
   }
 };
 
+struct ReshapeWorker : CatchCvExceptionWorker {
+public:
+  cv::Mat mat;
+  int cn;
+  std::vector<int> newshape;
+  cv::Mat reshapedMat;
+
+  ReshapeWorker(cv::Mat mat) {
+    this->mat = mat;
+  }
+  virtual ~ReshapeWorker() {
+  }
+
+  std::string executeCatchCvExceptionWorker() {
+    reshapedMat = mat.reshape(cn, newshape);
+    return "";
+  }
+
+  v8::Local<v8::Value> getReturnValue() {
+    return Mat::Converter::wrap(reshapedMat);
+  }
+
+  bool unwrapRequiredArgs(Nan::NAN_METHOD_ARGS_TYPE info) {
+    return (
+        FF::IntConverter::arg(0, &cn, info) ||
+        FF::IntArrayConverter::arg(1, &newshape, info)
+    );
+  }
+};
+
 struct AdaptiveThresholdWorker : CatchCvExceptionWorker {
 public:
   cv::Mat mat;

@@ -620,6 +620,8 @@ export class Mat {
   rescale(factor: number): Mat;
   rescaleAsync(factor: number): Promise<Mat>;
 
+  reshape(cn: number, newshape: number[]): Mat;
+
   resize(rows: number, cols: number, fx?: number, fy?: number, interpolation?: number): Mat;
   resize(dsize: Size, fx?: number, fy?: number, interpolation?: number): Mat;
 

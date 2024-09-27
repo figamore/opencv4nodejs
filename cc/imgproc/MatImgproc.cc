@@ -12,6 +12,7 @@ void MatImgproc::Init(v8::Local<v8::FunctionTemplate> ctor) {
   Nan::SetPrototypeMethod(ctor, "resize", Resize);
   Nan::SetPrototypeMethod(ctor, "resizeAsync", ResizeAsync);
   Nan::SetPrototypeMethod(ctor, "resizeToMax", ResizeToMax);
+  Nan::SetPrototypeMethod(ctor, "reshape", Reshape);
   Nan::SetPrototypeMethod(ctor, "resizeToMaxAsync", ResizeToMaxAsync);
   Nan::SetPrototypeMethod(ctor, "cvtColor", CvtColor);
   Nan::SetPrototypeMethod(ctor, "cvtColorAsync", CvtColorAsync);
@@ -169,6 +170,13 @@ NAN_METHOD(MatImgproc::ResizeToMax) {
   FF::executeSyncBinding(
       std::make_shared<MatImgprocBindings::ResizeToMaxWorker>(Mat::unwrapSelf(info)),
       "Mat::ResizeToMax",
+      info);
+}
+
+NAN_METHOD(MatImgproc::Reshape) {
+  FF::executeSyncBinding(
+      std::make_shared<MatImgprocBindings::ReshapeWorker>(Mat::unwrapSelf(info)),
+      "Mat::Reshape",
       info);
 }
 
