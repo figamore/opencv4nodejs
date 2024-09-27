@@ -1,3 +1,6 @@
+#ifndef __LAYER_CONVERTER_H__
+#define __LAYER_CONVERTER_H__
+
 #include "opencv2/dnn.hpp"
 #include "Mat.h"
 
@@ -10,10 +13,6 @@ public:
     Nan::Set(obj, Nan::New("blobs").ToLocalChecked(), wrapBlobs(layer->blobs));
 
     return obj;
-  }
-
-    static void setBlobs(cv::Ptr<cv::dnn::Layer>& layer, v8::Local<v8::Value> jsBlobs) {
-    layer->blobs = unwrapBlobs(jsBlobs);  // unwrap JS blobs and set to C++ layer
   }
 
   static std::vector<cv::Mat> unwrapBlobs(v8::Local<v8::Value> jsBlobs) {
@@ -33,3 +32,5 @@ public:
     return jsArray;
   }
 };
+
+#endif // __LAYER_CONVERTER_H__
