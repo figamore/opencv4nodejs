@@ -135,11 +135,23 @@ NAN_METHOD(Net::GetLayerNames) {
 }
 
 NAN_METHOD(Net::GetLayerId) {
+  FF::TryCatch tryCatch("Net::GetLayerId");
+  
+  cv::dnn::Net self = Net::unwrapSelf(info);
+  std::string layerName;
+
+  // Ensure we get the layer name from the arguments
+  if (FF::StringConverter::arg(0, &layerName, info)) {
+    return tryCatch.reThrow();
+  }
+
+  // Now instantiate the GetLayerIdWorker with both the Net and layerName
   FF::executeSyncBinding(
-      std::make_shared<NetBindings::GetLayerIdWorker>(Net::unwrapSelf(info)),
+      std::make_shared<NetBindings::GetLayerIdWorker>(self, layerName),
       "Net::GetLayerId",
       info);
 }
+
 
 NAN_METHOD(Net::GetLayerNamesAsync) {
   FF::executeAsyncBinding(
