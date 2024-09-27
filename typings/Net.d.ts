@@ -30,6 +30,7 @@ export class Net {
   setLayerBlobs(nameOrId: string | number, blobs: Mat[]): void;
   getLayer(nameOrId: string | number): Layer;
 
+  getLayerId(layerName: string): number;
 
   getLayerNames(): string[];
   /**

@@ -128,6 +128,29 @@ public:
 //   }
 // };
 
+struct GetLayerIdWorker : public CatchCvExceptionWorker {
+public:
+  cv::dnn::Net self;
+  std::string layerName;
+  int layerId;
+
+  GetLayerIdWorker(cv::dnn::Net self, std::string layerName) 
+    : self(self), layerName(layerName), layerId(-1) {}
+
+  std::string executeCatchCvExceptionWorker() {
+    layerId = self.getLayerId(layerName);
+    return "";
+  }
+
+  v8::Local<v8::Value> getReturnValue() {
+    return Nan::New(layerId);
+  }
+
+  bool unwrapRequiredArgs(Nan::NAN_METHOD_ARGS_TYPE info) {
+    return FF::StringConverter::arg(0, &layerName, info);
+  }
+};
+
 struct GetLayerNamesWorker : public CatchCvExceptionWorker {
 public:
   cv::dnn::Net self;
@@ -152,6 +175,7 @@ public:
     return FF::StringArrayConverter::wrap(returnValue);
   }
 };
+
 
 struct GetUnconnectedOutLayersWorker : public CatchCvExceptionWorker {
 public:

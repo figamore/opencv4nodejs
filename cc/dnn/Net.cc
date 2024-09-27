@@ -29,6 +29,7 @@ NAN_MODULE_INIT(Net::Init) {
   
   Nan::SetPrototypeMethod(ctor, "getLayer", GetLayer);
   Nan::SetPrototypeMethod(ctor, "setLayerBlobs", SetLayerBlobs);
+    Nan::SetPrototypeMethod(ctor, "getLayerId", GetLayerId);
   Nan::SetPrototypeMethod(ctor, "getLayerNames", GetLayerNames);
   Nan::SetPrototypeMethod(ctor, "getLayerNamesAsync", GetLayerNamesAsync);
   // getUnconnectedOutLayers(): number[];
@@ -130,6 +131,13 @@ NAN_METHOD(Net::GetLayerNames) {
   FF::executeSyncBinding(
       std::make_shared<NetBindings::GetLayerNamesWorker>(Net::unwrapSelf(info)),
       "Net::GetLayerNames",
+      info);
+}
+
+NAN_METHOD(Net::GetLayerId) {
+  FF::executeSyncBinding(
+      std::make_shared<NetBindings::GetLayerIdWorker>(Net::unwrapSelf(info)),
+      "Net::GetLayerId",
       info);
 }
 
