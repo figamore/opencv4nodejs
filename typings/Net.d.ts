@@ -27,6 +27,7 @@ export class Net {
   // Runs forward pass to compute outputs of layers listed in outBlobNames. More...
   //forward (std::vector< std::vector< Mat > > &outputBlobs, const std::vector< String > &outBlobNames): void
 
+  setLayerBlobs(nameOrId: string | number, blobs: Mat[]): void;
   getLayer(nameOrId: string | number): Layer;
 
 

@@ -26,7 +26,9 @@ NAN_MODULE_INIT(Net::Init) {
   Nan::SetPrototypeMethod(ctor, "forward", Forward);
   Nan::SetPrototypeMethod(ctor, "forwardAsync", ForwardAsync);
   // getLayerNames(): string[];
+  
   Nan::SetPrototypeMethod(ctor, "getLayer", GetLayer);
+  Nan::SetPrototypeMethod(ctor, "setLayerBlobs", SetLayerBlobs);
   Nan::SetPrototypeMethod(ctor, "getLayerNames", GetLayerNames);
   Nan::SetPrototypeMethod(ctor, "getLayerNamesAsync", GetLayerNamesAsync);
   // getUnconnectedOutLayers(): number[];
@@ -104,6 +106,25 @@ NAN_METHOD(Net::GetLayer) {
 
   info.GetReturnValue().Set(LayerConverter::wrap(layer));
 }
+
+NAN_METHOD(Net::SetLayerBlobs) {
+  FF::TryCatch tryCatch("Net::SetLayerBlobs");
+
+  int layerId;
+  v8::Local<v8::Value> jsBlobs;
+
+  if (FF::IntConverter::arg(0, &layerId, info) || info.Length() < 2 || !info[1]->IsArray()) {
+    return tryCatch.throwError("Invalid arguments");
+  }
+
+  jsBlobs = info[1];
+
+  FF::executeSyncBinding(
+      std::make_shared<NetBindings::SetLayerBlobsWorker>(Net::unwrapSelf(info), layerId, jsBlobs),
+      "Net::SetLayerBlobs",
+      info);
+}
+
 
 NAN_METHOD(Net::GetLayerNames) {
   FF::executeSyncBinding(

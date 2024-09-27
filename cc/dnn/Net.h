@@ -27,6 +27,7 @@ public:
   // getLayerNames(): string[];
 
   static NAN_METHOD(GetLayer);
+  static NAN_METHOD(SetLayerBlobs);
 
   static NAN_METHOD(GetLayerNames);
   static NAN_METHOD(GetLayerNamesAsync);

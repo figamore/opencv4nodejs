@@ -79,6 +79,26 @@ public:
   }
 };
 
+struct SetLayerBlobsWorker : public CatchCvExceptionWorker {
+public:
+  cv::dnn::Net self;
+  int layerId;
+  v8::Local<v8::Value> jsBlobs;
+
+  SetLayerBlobsWorker(cv::dnn::Net self, int layerId, v8::Local<v8::Value> jsBlobs) 
+      : self(self), layerId(layerId), jsBlobs(jsBlobs) {}
+
+  std::string executeCatchCvExceptionWorker() {
+    cv::Ptr<cv::dnn::Layer> layer = self.getLayer(layerId);
+    if (layer.empty()) {
+      return "Layer not found";
+    }
+    LayerConverter::setBlobs(layer, jsBlobs);
+    return "";
+  }
+};
+
+
 // struct GetLayerWorker : public CatchCvExceptionWorker {
 // public:
 //   cv::dnn::Net self;

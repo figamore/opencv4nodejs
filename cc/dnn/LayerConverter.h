@@ -12,6 +12,10 @@ public:
     return obj;
   }
 
+    static void setBlobs(cv::Ptr<cv::dnn::Layer>& layer, v8::Local<v8::Value> jsBlobs) {
+    layer->blobs = unwrapBlobs(jsBlobs);  // unwrap JS blobs and set to C++ layer
+  }
+
   static std::vector<cv::Mat> unwrapBlobs(v8::Local<v8::Value> jsBlobs) {
     std::vector<cv::Mat> blobs;
     v8::Local<v8::Array> jsArray = v8::Local<v8::Array>::Cast(jsBlobs);
