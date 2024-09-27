@@ -6,6 +6,10 @@ export interface ddnLayerParams {
   type: string;
 }
 
+export interface Layer {
+  blobs: Mat[];
+}
+
 export class Net {
   addLayer(name: string, type: string, params: ddnLayerParams): number
   addLayerToPrev(name: string, type: string, params: ddnLayerParams): number
@@ -22,6 +26,9 @@ export class Net {
   //forward (OutputArrayOfArrays outputBlobs, const std::vector< String > &outBlobNames): void        
   // Runs forward pass to compute outputs of layers listed in outBlobNames. More...
   //forward (std::vector< std::vector< Mat > > &outputBlobs, const std::vector< String > &outBlobNames): void
+
+  getLayer(nameOrId: string | number): Layer;
+
 
   getLayerNames(): string[];
   /**
