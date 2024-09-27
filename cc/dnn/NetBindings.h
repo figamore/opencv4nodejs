@@ -1,4 +1,5 @@
 #include "Net.h"
+#include "LayerConverter"
 
 #ifndef __FF_NETBINDINGS_H_
 #define __FF_NETBINDINGS_H_
