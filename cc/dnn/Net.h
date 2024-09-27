@@ -25,6 +25,9 @@ public:
   static NAN_METHOD(Forward);
   static NAN_METHOD(ForwardAsync);
   // getLayerNames(): string[];
+
+  static NAN_METHOD(GetLayer);
+
   static NAN_METHOD(GetLayerNames);
   static NAN_METHOD(GetLayerNamesAsync);
   // getUnconnectedOutLayers(): number[];

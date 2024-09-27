@@ -7,6 +7,8 @@
 
 #include "Net.h"
 #include "NetBindings.h"
+#include "LayerConverter.h"
+
 
 Nan::Persistent<v8::FunctionTemplate> Net::constructor;
 
@@ -24,6 +26,7 @@ NAN_MODULE_INIT(Net::Init) {
   Nan::SetPrototypeMethod(ctor, "forward", Forward);
   Nan::SetPrototypeMethod(ctor, "forwardAsync", ForwardAsync);
   // getLayerNames(): string[];
+  Nan::SetPrototypeMethod(ctor, "getLayer", GetLayer);
   Nan::SetPrototypeMethod(ctor, "getLayerNames", GetLayerNames);
   Nan::SetPrototypeMethod(ctor, "getLayerNamesAsync", GetLayerNamesAsync);
   // getUnconnectedOutLayers(): number[];
@@ -75,6 +78,31 @@ NAN_METHOD(Net::ForwardAsync) {
       std::make_shared<NetBindings::ForwardWorker>(Net::unwrapSelf(info)),
       "Net::ForwardAsync",
       info);
+}
+
+NAN_METHOD(Net::GetLayer) {
+  FF::TryCatch tryCatch("Net::GetLayer");
+  cv::dnn::Net self = Net::unwrapSelf(info);
+
+  std::string layerName;
+  int layerId = -1;
+
+  if (FF::StringConverter::optArg(0, &layerName, info)) {
+    return tryCatch.reThrow();
+  }
+
+  if (layerName.empty() && FF::IntConverter::optArg(0, &layerId, info)) {
+    return tryCatch.reThrow();
+  }
+
+  cv::Ptr<cv::dnn::Layer> layer;
+  if (!layerName.empty()) {
+    layer = self.getLayer(self.getLayerId(layerName));
+  } else {
+    layer = self.getLayer(layerId);
+  }
+
+  info.GetReturnValue().Set(LayerConverter::wrap(layer));
 }
 
 NAN_METHOD(Net::GetLayerNames) {

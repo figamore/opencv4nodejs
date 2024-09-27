@@ -79,6 +79,34 @@ public:
   }
 };
 
+struct GetLayerWorker : public CatchCvExceptionWorker {
+public:
+  cv::dnn::Net self;
+  std::string layerName;
+  int layerId;
+  bool useName;
+
+  GetLayerWorker(cv::dnn::Net self, std::string layerName) 
+    : self(self), layerName(layerName), layerId(-1), useName(true) {}
+  GetLayerWorker(cv::dnn::Net self, int layerId) 
+    : self(self), layerName(""), layerId(layerId), useName(false) {}
+
+  cv::Ptr<cv::dnn::Layer> returnValue;
+
+  std::string executeCatchCvExceptionWorker() {
+    if (useName) {
+      returnValue = self.getLayer(self.getLayerId(layerName));
+    } else {
+      returnValue = self.getLayer(layerId);
+    }
+    return "";
+  }
+
+  v8::Local<v8::Value> getReturnValue() {
+    return LayerConverter::wrap(returnValue);
+  }
+};
+
 struct GetLayerNamesWorker : public CatchCvExceptionWorker {
 public:
   cv::dnn::Net self;
