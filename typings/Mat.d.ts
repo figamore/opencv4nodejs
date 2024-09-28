@@ -182,6 +182,16 @@ export class Mat {
    * @param type CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F ...
    */
   constructor(data: Buffer, rows: number, cols: number, type?: number);
+  /**
+   * 
+   * Create a multi-dimensional Mat with specified sizes and type.
+   * 
+   * @param sizes Array specifying the size of each dimension.
+   * @param type Type of the matrix elements (e.g., CV_8U, CV_32F).
+   * @param data Buffer containing the raw data.
+   * @param steps Optional array specifying the number of bytes each matrix row occupies.
+   */
+  constructor(sizes: number[], type: number, data: Buffer, steps?: number[]);
   abs(): Mat;
   absdiff(otherMat: Mat): Mat;
   accumulate(src: Mat, mask?: Mat): Mat;
