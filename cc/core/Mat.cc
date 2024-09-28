@@ -436,7 +436,26 @@ NAN_METHOD(Mat::New) {
   // prepare debug for next big release
   //  std::cout << "New Mat: args: " << info.Length() << std::endl;
 
-   if (info.Length() >= 3 && info[0]->IsInt32() && info[1]->IsArray() && info[2]->IsInt32()) {
+   if (info.Length() >= 4 && info[0]->IsArray() && info[1]->IsInt32() && 
+         Nan::New(Mat::constructor)->HasInstance(info[2]) && info[3]->IsInt32()) {
+      v8::Local<v8::Array> sizeArray = v8::Local<v8::Array>::Cast(info[0]);
+      int type = info[1]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+      cv::Mat otherMat = Mat::Converter::unwrapUnchecked(info[2]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
+      int rowOffset = info[3]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+      int colOffset = 0;
+      if (info.Length() > 4 && info[4]->IsInt32()) {
+        colOffset = info[4]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+      }
+
+      std::vector<int> sizes(sizeArray->Length());
+      for (uint i = 0; i < sizeArray->Length(); i++) {
+        sizes[i] = Nan::To<int32_t>(Nan::Get(sizeArray, i).ToLocalChecked()).FromJust();
+      }
+
+      cv::Mat mat(sizes, type, otherMat.ptr(rowOffset, colOffset));
+      self->setNativeObject(mat);
+    }
+   else if (info.Length() >= 3 && info[0]->IsInt32() && info[1]->IsArray() && info[2]->IsInt32()) {
     int ndims = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
     v8::Local<v8::Array> sizeArray = v8::Local<v8::Array>::Cast(info[1]);
     int type = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();

@@ -183,6 +183,7 @@ export class Mat {
    */
   constructor(data: Buffer, rows: number, cols: number, type?: number);
   constructor(ndims: number, sizes: number[], type: number, data?: Buffer, steps?: number[]);
+  constructor(sizes: number[], type: number, otherMat: Mat, rowOffset: number, colOffset?: number);
   abs(): Mat;
   absdiff(otherMat: Mat): Mat;
   accumulate(src: Mat, mask?: Mat): Mat;
