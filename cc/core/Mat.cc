@@ -642,8 +642,20 @@ NAN_METHOD(Mat::New) {
 
 NAN_METHOD(Mat::NewFromDimensions) {
   FF::TryCatch tryCatch("Mat::NewFromDimensions");
-  FF_ASSERT_CONSTRUCT_CALL();
+  
+  // Remove this line:
+  // FF_ASSERT_CONSTRUCT_CALL();
+
+  // Instead, check if it's a constructor call and create a new instance if it's not
+  if (!info.IsConstructCall()) {
+    Nan::ThrowError("Mat::NewFromDimensions must be called with new");
+    return;
+  }
+
+  // Create a new instance
+  v8::Local<v8::Object> instance = info.This();
   Mat* self = new Mat();
+  self->Wrap(instance);
 
   if (info.Length() < 3 || !info[0]->IsInt32() || !info[1]->IsArray() || !info[2]->IsInt32()) {
     return tryCatch.throwError("Invalid arguments");
@@ -683,11 +695,10 @@ NAN_METHOD(Mat::NewFromDimensions) {
 
   cv::Mat mat(ndims, sizes.data(), type, data, steps);
   self->setNativeObject(mat);
-  self->Wrap(info.Holder());
 
   ExternalMemTracking::onMatAllocated();
 
-  info.GetReturnValue().Set(info.Holder());
+  info.GetReturnValue().Set(instance);
 }
 
 NAN_METHOD(Mat::Eye) {
