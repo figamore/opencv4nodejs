@@ -52,7 +52,6 @@ public:
 
 
   static NAN_METHOD(New);
-  static NAN_METHOD(NewFromDimensions);
   static NAN_METHOD(Eye);
   static NAN_METHOD(Ones);
   static NAN_METHOD(Zeros);

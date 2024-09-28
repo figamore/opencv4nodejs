@@ -116,7 +116,6 @@ NAN_MODULE_INIT(Mat::Init) {
   Nan::SetAccessor(ctor->InstanceTemplate(), Nan::New("elemSize").ToLocalChecked(), Mat::GetElemSize);
   Nan::SetAccessor(ctor->InstanceTemplate(), Nan::New("step").ToLocalChecked(), Mat::GetStep);
   // Mat static metodas
-  Nan::SetMethod(ctor, "newFromDimensions", NewFromDimensions);
   Nan::SetMethod(ctor, "eye", Eye);
   Nan::SetMethod(ctor, "ones", Ones);
   Nan::SetMethod(ctor, "zeros", Zeros);
@@ -436,7 +435,44 @@ NAN_METHOD(Mat::New) {
    */
   // prepare debug for next big release
   //  std::cout << "New Mat: args: " << info.Length() << std::endl;
-  if (info.Length() == 1 && info[0]->IsArray()) {
+
+   if (info.Length() >= 3 && info[0]->IsInt32() && info[1]->IsArray() && info[2]->IsInt32()) {
+    int ndims = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+    v8::Local<v8::Array> sizeArray = v8::Local<v8::Array>::Cast(info[1]);
+    int type = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+
+    if (ndims != sizeArray->Length()) {
+      return tryCatch.throwError("Number of dimensions doesn't match size array length");
+    }
+
+    std::vector<int> sizes(ndims);
+    for (int i = 0; i < ndims; i++) {
+      sizes[i] = Nan::To<int32_t>(Nan::Get(sizeArray, i).ToLocalChecked()).FromJust();
+    }
+
+    void* data = nullptr;
+    const size_t* steps = nullptr;
+
+    if (info.Length() > 3 && node::Buffer::HasInstance(info[3])) {
+      data = node::Buffer::Data(info[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
+    }
+
+    if (info.Length() > 4 && info[4]->IsArray()) {
+      v8::Local<v8::Array> stepsArray = v8::Local<v8::Array>::Cast(info[4]);
+      if (stepsArray->Length() != ndims) {
+        return tryCatch.throwError("Steps array length doesn't match number of dimensions");
+      }
+      std::vector<size_t> stepsVec(ndims);
+      for (int i = 0; i < ndims; i++) {
+        stepsVec[i] = Nan::To<uint32_t>(Nan::Get(stepsArray, i).ToLocalChecked()).FromJust();
+      }
+      steps = stepsVec.data();
+    }
+
+    cv::Mat mat(ndims, sizes.data(), type, data, steps);
+    self->setNativeObject(mat);
+  }
+  else if (info.Length() == 1 && info[0]->IsArray()) {
     v8::Local<v8::Array> jsChannelMats = v8::Local<v8::Array>::Cast(info[0]);
     std::vector<cv::Mat> channels;
     for (uint i = 0; i < jsChannelMats->Length(); i++) {
@@ -638,67 +674,6 @@ NAN_METHOD(Mat::New) {
   ExternalMemTracking::onMatAllocated();
 
   info.GetReturnValue().Set(info.Holder());
-}
-
-NAN_METHOD(Mat::NewFromDimensions) {
-  FF::TryCatch tryCatch("Mat::NewFromDimensions");
-  
-  // Remove this line:
-  // FF_ASSERT_CONSTRUCT_CALL();
-
-  // Instead, check if it's a constructor call and create a new instance if it's not
-  if (!info.IsConstructCall()) {
-    Nan::ThrowError("Mat::NewFromDimensions must be called with new");
-    return;
-  }
-
-  // Create a new instance
-  v8::Local<v8::Object> instance = info.This();
-  Mat* self = new Mat();
-  self->Wrap(instance);
-
-  if (info.Length() < 3 || !info[0]->IsInt32() || !info[1]->IsArray() || !info[2]->IsInt32()) {
-    return tryCatch.throwError("Invalid arguments");
-  }
-
-  int ndims = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
-  v8::Local<v8::Array> sizeArray = v8::Local<v8::Array>::Cast(info[1]);
-  int type = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();
-
-  if (ndims != sizeArray->Length()) {
-    return tryCatch.throwError("Number of dimensions doesn't match size array length");
-  }
-
-  std::vector<int> sizes(ndims);
-  for (int i = 0; i < ndims; i++) {
-    sizes[i] = Nan::To<int32_t>(Nan::Get(sizeArray, i).ToLocalChecked()).FromJust();
-  }
-
-  void* data = nullptr;
-  size_t* steps = nullptr;
-
-  if (info.Length() > 3 && node::Buffer::HasInstance(info[3])) {
-    data = node::Buffer::Data(info[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
-  }
-
-  if (info.Length() > 4 && info[4]->IsArray()) {
-    v8::Local<v8::Array> stepsArray = v8::Local<v8::Array>::Cast(info[4]);
-    if (stepsArray->Length() != ndims) {
-      return tryCatch.throwError("Steps array length doesn't match number of dimensions");
-    }
-    std::vector<size_t> stepsVec(ndims);
-    for (int i = 0; i < ndims; i++) {
-      stepsVec[i] = Nan::To<uint32_t>(Nan::Get(stepsArray, i).ToLocalChecked()).FromJust();
-    }
-    steps = stepsVec.data();
-  }
-
-  cv::Mat mat(ndims, sizes.data(), type, data, steps);
-  self->setNativeObject(mat);
-
-  ExternalMemTracking::onMatAllocated();
-
-  info.GetReturnValue().Set(instance);
 }
 
 NAN_METHOD(Mat::Eye) {
