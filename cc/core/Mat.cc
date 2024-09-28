@@ -629,36 +629,32 @@ NAN_METHOD(Mat::New) {
     memcpy(mat.data, data, size);
     self->setNativeObject(mat);
   }
-  else if (info.Length() == 4 && info[0]->IsArray() && info[1]->IsNumber() && node::Buffer::HasInstance(info[2]) && info[3]->IsInt32()) {
-  // Get the dimensions array
-  v8::Local<v8::Array> jsSizes = v8::Local<v8::Array>::Cast(info[0]);
-  int ndims = jsSizes->Length();
+  else if (info.Length() == 5 && info[0]->IsArray() && info[1]->IsNumber() && info[2]->IsNumber() && info[3]->IsObject()) {
+  v8::Local<v8::Array> sizesArray = v8::Local<v8::Array>::Cast(info[0]);
+  int ndims = sizesArray->Length();
   std::vector<int> sizes(ndims);
-  
+
   for (int i = 0; i < ndims; ++i) {
-    sizes[i] = jsSizes->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->Int32Value(Nan::GetCurrentContext()).FromJust();
+    sizes[i] = sizesArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->Int32Value(Nan::GetCurrentContext()).FromJust();
   }
 
-  // Get the type
-  int type = info[3]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
+  int type = info[1]->Int32Value(Nan::GetCurrentContext()).FromJust();
+  char* data = static_cast<char*>(node::Buffer::Data(info[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked()));
 
-  // Get the data buffer
-  char* data = static_cast<char*>(node::Buffer::Data(info[2]->ToObject(Nan::GetCurrentContext()).ToLocalChecked()));
-
-  // Create the Mat object
   cv::Mat mat(ndims, sizes.data(), type, data);
 
-  // Optionally handle steps if provided
-  // size_t* steps = ...; // initialize if there's a need to handle steps
+  if (info[4]->IsArray()) {
+    v8::Local<v8::Array> stepsArray = v8::Local<v8::Array>::Cast(info[4]);
+    std::vector<size_t> steps(ndims);
+
+    for (int i = 0; i < ndims; ++i) {
+      steps[i] = stepsArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->Uint32Value(Nan::GetCurrentContext()).FromJust();
+    }
+
+    mat = cv::Mat(ndims, sizes.data(), type, data, steps.data());
+  }
 
   self->setNativeObject(mat);
-  
-  self->Wrap(info.Holder());
-
-  // External memory tracking
-  ExternalMemTracking::onMatAllocated();
-
-  info.GetReturnValue().Set(info.Holder());
 }
   self->Wrap(info.Holder());
 

@@ -28,6 +28,7 @@ public:
   FF_GETTER_CUSTOM(channels, FF::IntConverter, self.channels());
   FF_GETTER_CUSTOM(dims, FF::IntConverter, self.dims);
   FF_GETTER_CUSTOM(depth, FF::IntConverter, self.depth());
+  FF_GETTER_CUSTOM(sizes, FF::IntArrayConverter, self.size);
   FF_GETTER_CUSTOM(empty, FF::IntConverter, self.empty());
 
   static NAN_GETTER(GetElemSize) {
