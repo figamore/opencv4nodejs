@@ -116,6 +116,7 @@ NAN_MODULE_INIT(Mat::Init) {
   Nan::SetAccessor(ctor->InstanceTemplate(), Nan::New("elemSize").ToLocalChecked(), Mat::GetElemSize);
   Nan::SetAccessor(ctor->InstanceTemplate(), Nan::New("step").ToLocalChecked(), Mat::GetStep);
   // Mat static metodas
+  Nan::SetMethod(ctor, "newFromDimensions", NewFromDimensions);
   Nan::SetMethod(ctor, "eye", Eye);
   Nan::SetMethod(ctor, "ones", Ones);
   Nan::SetMethod(ctor, "zeros", Zeros);
@@ -629,38 +630,61 @@ NAN_METHOD(Mat::New) {
     memcpy(mat.data, data, size);
     self->setNativeObject(mat);
   }
-  else if (info.Length() == 5 && info[0]->IsArray() && info[1]->IsNumber() && info[2]->IsNumber() && info[3]->IsObject()) {
-  v8::Local<v8::Array> sizesArray = v8::Local<v8::Array>::Cast(info[0]);
-  int ndims = sizesArray->Length();
-  std::vector<int> sizes(ndims);
-
-  for (int i = 0; i < ndims; ++i) {
-    sizes[i] = sizesArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->Int32Value(Nan::GetCurrentContext()).FromJust();
-  }
-
-  int type = info[1]->Int32Value(Nan::GetCurrentContext()).FromJust();
-  char* data = static_cast<char*>(node::Buffer::Data(info[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked()));
-
-  cv::Mat mat(ndims, sizes.data(), type, data);
-
-  if (info[4]->IsArray()) {
-    v8::Local<v8::Array> stepsArray = v8::Local<v8::Array>::Cast(info[4]);
-    std::vector<size_t> steps(ndims);
-
-    for (int i = 0; i < ndims; ++i) {
-      steps[i] = stepsArray->Get(Nan::GetCurrentContext(), i).ToLocalChecked()->Uint32Value(Nan::GetCurrentContext()).FromJust();
-    }
-
-    mat = cv::Mat(ndims, sizes.data(), type, data, steps.data());
-  }
-
-  self->setNativeObject(mat);
-}
   self->Wrap(info.Holder());
 
   // if ExternalMemTracking is disabled, the following instruction will be a no op
   // notes: I *think* New should be called in JS thread where cv::mat has been created async,
   // so a good place to rationalise memory
+  ExternalMemTracking::onMatAllocated();
+
+  info.GetReturnValue().Set(info.Holder());
+}
+
+NAN_METHOD(Mat::NewFromDimensions) {
+  FF::TryCatch tryCatch("Mat::NewFromDimensions");
+  FF_ASSERT_CONSTRUCT_CALL();
+  Mat* self = new Mat();
+
+  if (info.Length() < 3 || !info[0]->IsInt32() || !info[1]->IsArray() || !info[2]->IsInt32()) {
+    return tryCatch.throwError("Invalid arguments");
+  }
+
+  int ndims = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+  v8::Local<v8::Array> sizeArray = v8::Local<v8::Array>::Cast(info[1]);
+  int type = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+
+  if (ndims != sizeArray->Length()) {
+    return tryCatch.throwError("Number of dimensions doesn't match size array length");
+  }
+
+  std::vector<int> sizes(ndims);
+  for (int i = 0; i < ndims; i++) {
+    sizes[i] = Nan::To<int32_t>(Nan::Get(sizeArray, i).ToLocalChecked()).FromJust();
+  }
+
+  void* data = nullptr;
+  size_t* steps = nullptr;
+
+  if (info.Length() > 3 && node::Buffer::HasInstance(info[3])) {
+    data = node::Buffer::Data(info[3]->ToObject(Nan::GetCurrentContext()).ToLocalChecked());
+  }
+
+  if (info.Length() > 4 && info[4]->IsArray()) {
+    v8::Local<v8::Array> stepsArray = v8::Local<v8::Array>::Cast(info[4]);
+    if (stepsArray->Length() != ndims) {
+      return tryCatch.throwError("Steps array length doesn't match number of dimensions");
+    }
+    std::vector<size_t> stepsVec(ndims);
+    for (int i = 0; i < ndims; i++) {
+      stepsVec[i] = Nan::To<uint32_t>(Nan::Get(stepsArray, i).ToLocalChecked()).FromJust();
+    }
+    steps = stepsVec.data();
+  }
+
+  cv::Mat mat(ndims, sizes.data(), type, data, steps);
+  self->setNativeObject(mat);
+  self->Wrap(info.Holder());
+
   ExternalMemTracking::onMatAllocated();
 
   info.GetReturnValue().Set(info.Holder());

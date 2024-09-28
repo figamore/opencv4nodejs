@@ -28,7 +28,6 @@ public:
   FF_GETTER_CUSTOM(channels, FF::IntConverter, self.channels());
   FF_GETTER_CUSTOM(dims, FF::IntConverter, self.dims);
   FF_GETTER_CUSTOM(depth, FF::IntConverter, self.depth());
-  FF_GETTER_CUSTOM(sizes, FF::IntArrayConverter, self.size);
   FF_GETTER_CUSTOM(empty, FF::IntConverter, self.empty());
 
   static NAN_GETTER(GetElemSize) {
@@ -51,7 +50,9 @@ public:
     FF_OPERATOR_RET_SCALAR(&cv::Mat::dot, FF_APPLY_CLASS_FUNC, Mat, "Dot");
   }
 
+
   static NAN_METHOD(New);
+  static NAN_METHOD(NewFromDimensions);
   static NAN_METHOD(Eye);
   static NAN_METHOD(Ones);
   static NAN_METHOD(Zeros);

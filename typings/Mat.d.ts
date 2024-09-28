@@ -183,15 +183,13 @@ export class Mat {
    */
   constructor(data: Buffer, rows: number, cols: number, type?: number);
   /**
-   * 
-   * Create a multi-dimensional Mat with specified sizes and type.
-   * 
-   * @param sizes Array specifying the size of each dimension.
-   * @param type Type of the matrix elements (e.g., CV_8U, CV_32F).
-   * @param data Buffer containing the raw data.
-   * @param steps Optional array specifying the number of bytes each matrix row occupies.
+   * @param ndims Number of dimensions
+   * @param sizes Array of dimension sizes
+   * @param type CV_8U, CV_8S, CV_16U, CV_16S, CV_32S, CV_32F, CV_64F ...
+   * @param data Optional buffer containing the data
+   * @param steps Optional array of steps for each dimension
    */
-  constructor(sizes: number[], type: number, data: Buffer, steps?: number[]);
+  constructor(ndims: number, sizes: number[], type: number, data?: Buffer, steps?: number[]);
   abs(): Mat;
   absdiff(otherMat: Mat): Mat;
   accumulate(src: Mat, mask?: Mat): Mat;
@@ -837,6 +835,7 @@ export class Mat {
    * @param cols Number of columns.
    * @param type Created matrix type.
    */
+  static newFromDimensions(ndims: number, sizes: number[], type: number, data?: Buffer, steps?: number[]): Mat;
   static eye(rows: number, cols: number, type: number): Mat;
   /**
    * Returns an array of all 1's of the specified size and type.
